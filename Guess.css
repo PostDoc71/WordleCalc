@@ -1,0 +1,239 @@
+#guesscalc1 {
+   margin-left: 5px;
+}
+
+table {
+  height: 240px;
+  width: 240px;
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow';
+  font-size:large;
+  text-align: center;
+  vertical-align: middle;
+  padding: 5px;
+  background-color: white;
+  color: white;
+  shadow
+}
+
+#guessbox {
+  border:2px solid blue;
+  background-color: azure;
+  font-size: medium;
+  font-family: Arial, Helvetica, sans-serif;
+
+}
+#r00 {
+   border: 3px solid white;
+   width: 3.5ch;
+   height: 3.5ch;
+   background-color: #eee;
+   color: white;
+}
+#r01 {
+   width: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+
+}
+#r02 {
+   width: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r03 {
+   width: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r04 {
+   width: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r10 {
+   width: 3.5ch;
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r11 {
+   width: 3.5ch;
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r12 {
+   width: 3.5ch;
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r13 {
+   width: 3.5ch;
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r14 {
+   width: 3.5ch;
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r20 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r21 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r22 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r23 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r24 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r30 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r31 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r32 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r33 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r34 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r40 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r41 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r42 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r43 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r44 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r50 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r51 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r52 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r53 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+#r54 {
+   height: 3.5ch;
+   border: 3px solid white;
+   background-color: #eee;
+   color: white;
+}
+
+#wordmatch {
+   margin-bottom: 6px;
+}
+#eraseline {
+   margin-bottom: 6px;
+}
+#output-box {
+   font-family: 'Courier New', Courier, monospace;
+}
+#calculate {
+   margin-right: 16px;
+   margin-bottom: 6px;
+}
+
+#words-input {
+   border:2px solid blue;.
+}
+#statistics {
+   margin-top: 6px;
+   margin-bottom: 6px;
+}
+#clear-all {
+   margin-bottom: 6px;
+}
+
+
+  
