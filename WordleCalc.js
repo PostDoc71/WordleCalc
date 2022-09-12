@@ -3,54 +3,51 @@
 // First attempt at a complete Wordle solver
 
 Promise.all([
-    // fetch('https://babelthuap.github.io/kokowordle/solutions.json').then(r => r.json()),
-    // fetch('https://babelthuap.github.io/kokowordle/guesses.json').then(r => r.json()),
-    fetch('https://postdoc71.github.io/WordleCalc/SolutionList.json').then(r => r.json()),
-    fetch('https://postdoc71.github.io/WordleCalc/GuessList.json').then(r => r.json()),
-]).then (([s, g]) => {
-    let SolutionList = [...s];
-    let GuessList = [...g];
+    // Download the SolutionList and GuessList files in parallel.
+    fetch('SolutionList.json').then(r => r.json()),
+    fetch('GuessList.json').then(r => r.json()),
+]).then (([SolutionList, GuessList]) => {
 
 //======================================
 // GLOBAL VARIABLES
 //======================================
 
-let GuessEl = document.getElementById('guessbox');
-let CalcGuessEl = document.getElementById('guesscalc1');
-let FindEl = document.getElementById('wordmatch');
-let EraseEl = document.getElementById('eraseline');
-let WordsInputEl = document.getElementById('words-input');
-let CalculateEl = document.getElementById('statistics');
-let CheckWordEl = document.getElementById('check-word');
-let ClearEl = document.getElementById('clear-all');
-let ClearGuessEl = document.getElementById('clear-guesses');
-let SolutionListEl = document.getElementById('solution-list');
-let GuessListEl = document.getElementById('guess-list');
-let OutputBox = document.getElementById('output-box');
+const El = {
+    Guess: document.getElementById('guessbox'),
+    GuessTable: document.getElementById('guess-table'),
+    CalcGuess: document.getElementById('guesscalc1'),
+    Find: document.getElementById('wordmatch'),
+    Erase: document.getElementById('eraseline'),
+    WordsInput: document.getElementById('words-input'),
+    Calculate: document.getElementById('statistics'),
+    CheckWord: document.getElementById('check-word'),
+    Clear: document.getElementById('clear-all'),
+    ClearGuess: document.getElementById('clear-guesses'),
+    SolutionList: document.getElementById('solution-list'),
+    GuessList: document.getElementById('guess-list'),
+    OutputBox: document.getElementById('output-box'),
+};
 
-let ColObj = {
-    letter: '',
-    color: 0,
-    element: '',
-}
-let Cell = [
-    [Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj)],
-    [Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj)],
-    [Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj)],
-    [Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj)],
-    [Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj)],
-    [Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj), Object.assign({}, ColObj)]
-]
-for (let i = 0; i < 6; i++) {
-    for (let j = 0; j < 5; j++) {
-        Cell[i][j].element =  document.getElementById("r" + i + j);
+// Build the Guess Table and store references to each of the cells in the Cell array.
+let Cell = [];
+for (let y = 0; y < 6; y++) {
+    let RowObj = [];
+    let RowEl = document.createElement('tr');
+    for (let x = 0; x < 5; x++) {
+        let CellEl = document.createElement('td');
+        RowObj.push({letter: '', color: 0, element: CellEl});
+        RowEl.appendChild(CellEl);
     }
+    Cell.push(RowObj);
+    El.GuessTable.appendChild(RowEl);
 }
 
-const GREY = '#eee';
-const GRAY = 0;
-const GREEN = 1;
-const YELLOW = 2;
+const Color = {
+    GRAY: 0,
+    GREEN: 1,
+    YELLOW: 2,
+};
+
 let GuessBox = ['', '', '', '', '', '']
 let GreenBoxes = ['', '', '', '', ''];
 let YellowBoxes = ['', '', '', '', ''];
@@ -65,32 +62,32 @@ let GuessesLeft = [];
 // MAIN PROGRAM
 //======================================
 
-GuessEl.addEventListener('keypress', e => {
+El.Guess.addEventListener('keypress', e => {
     if (e.key === 'Enter') {
         DisplayGuess();
     }
 });
-CalcGuessEl.addEventListener('click', DisplayGuess);
+El.CalcGuess.addEventListener('click', DisplayGuess);
 for (let i = 0; i < 6; i++) {
     for (let j = 0; j < 5; j++) {
         Cell[i][j].element.addEventListener('click', () => ChangeColor(i, j));
     }
 }
-FindEl.addEventListener('click', FindWords);
-EraseEl.addEventListener('click', EraseLine);
-CalculateEl.addEventListener('click', Statistics);
-CheckWordEl.addEventListener('click', CheckWords);
-ClearEl.addEventListener('click', ClearAnswers);
-ClearGuessEl.addEventListener('click', ClearGuesses);
-SolutionListEl.addEventListener('click', () => ShowList(SolutionList));
-GuessListEl.addEventListener('click', () => ShowList(GuessList));
+El.Find.addEventListener('click', FindWords);
+El.Erase.addEventListener('click', EraseLine);
+El.Calculate.addEventListener('click', Statistics);
+El.CheckWord.addEventListener('click', CheckWords);
+El.Clear.addEventListener('click', ClearAnswers);
+El.ClearGuess.addEventListener('click', ClearGuesses);
+El.SolutionList.addEventListener('click', () => ShowList(SolutionList));
+El.GuessList.addEventListener('click', () => ShowList(GuessList));
 
 //======================================
 // FUNCTIONS
 //======================================
 
 function DisplayGuess() {
-    let word = String(GuessEl.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x));
+    let word = String(El.Guess.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x));
     if (!ValidateGuess(word) || Row > 6) return;
     Row++;
     GuessBox[Row] = word;
@@ -99,28 +96,28 @@ function DisplayGuess() {
         Cell[Row][i].letter = word[i];
     }
     for (let i = 0; i < 5; i++) {                       // initialize color
-        if ((Row > 0) && (Cell[Row-1][i].color === GREEN)) {
+        if ((Row > 0) && (Cell[Row-1][i].color === Color.GREEN)) {
             Cell[Row][i].element.style.backgroundColor='mediumseagreen';
-            Cell[Row][i].color = GREEN;
+            Cell[Row][i].color = Color.GREEN;
         } else {
             Cell[Row][i].element.style.backgroundColor='gray';
-            Cell[Row][i].color = GRAY;
+            Cell[Row][i].color = Color.GRAY;
         }
     }
-    GuessEl.value = '';
+    El.Guess.value = '';
 }
 
 function ChangeColor(row, col) {
     if (row != Row) return;
     Cell[row][col].color = ++Cell[row][col].color % 3;
     switch (Cell[row][col].color) {
-        case GRAY:
+        case Color.GRAY:
             Cell[row][col].element.style.backgroundColor='gray';
             break;
-        case GREEN:
+        case Color.GREEN:
             Cell[row][col].element.style.backgroundColor='mediumseagreen';
             break;
-        case YELLOW:
+        case Color.YELLOW:
             Cell[row][col].element.style.backgroundColor='rgb(255, 225, 0)';
             break;
     }
@@ -150,7 +147,7 @@ function FindWords() {
     for (let i = 0; i < GuessList.length; i = i + 5) {
         output += GuessesLeft.slice(i, i + 5) + ' ';
     }
-    WordsInputEl.value = output;
+    El.WordsInput.value = output;
 }
 
 function CollectData() {
@@ -160,14 +157,14 @@ function CollectData() {
         
         // Green letters
         for (let j = 0; j < 5; j++) {
-            if (Cell[i][j].color === GREEN) {
+            if (Cell[i][j].color === Color.GREEN) {
                 GreenBoxes[j] =Cell[i][j].letter;
             }
         }
 
         // Yellow letters and boxes
         for (let j = 0; j < 5; j++) {
-            if (Cell[i][j].color === YELLOW) {
+            if (Cell[i][j].color === Color.YELLOW) {
                 if (YellowLetters.search(Cell[i][j].letter) < 0) {
                     YellowLetters += Cell[i][j].letter;
                 }
@@ -179,7 +176,7 @@ function CollectData() {
 
         // Gray letters
         for (let j = 0; j < 5; j++) {
-            if (Cell[i][j].color === GRAY) {
+            if (Cell[i][j].color === Color.GRAY) {
                 if (GrayLetters.search(Cell[i][j].letter) < 0) {
                     GrayLetters += Cell[i][j].letter;
                 }
@@ -229,8 +226,8 @@ function CullList(list) {
 function EraseLine() {
 for (let i = 0; i < 5; i++) {
     Cell[Row][i].letter = '';
-    Cell[Row][i].color = GRAY;
-    Cell[Row][i].element.style.backgroundColor = GREY;
+    Cell[Row][i].color = Color.GRAY;
+    Cell[Row][i].element.style.backgroundColor = '#eee';
     Cell[Row][i].element.innerHTML = '';
     GreenBoxes[i] = '';
     YellowBoxes[i] = '';
@@ -244,19 +241,19 @@ Row--;
 }
 
 function ClearAnswers() {
-    WordsInputEl.value = '';
-    OutputBox.innerHTML = '';
+    El.WordsInput.value = '';
+    El.OutputBox.innerHTML = '';
 }
 
 function ClearGuesses() {
-    let words = WordsInputEl.value;
+    let words = El.WordsInput.value;
     let index = words.indexOf("<===>");
     if (index < 0) {
         alert("'The word list must contain the separator '<===>' between the solution words and guess words.");
         return;
     }
-    WordsInputEl.value = words.slice(0, index);
-    OutputBox.innerHTML = '';
+    El.WordsInput.value = words.slice(0, index);
+    El.OutputBox.innerHTML = '';
 }
 
 
@@ -269,7 +266,7 @@ function SearchStringInArray(str, strArray) {
 }
 
 function ShowList (list) {
-    OutputBox.innerHTML = '';
+    El.OutputBox.innerHTML = '';
     let output = '';
     let h = Math.floor(list.length / 6) + 1;
     let j = h + h;
@@ -286,15 +283,15 @@ function ShowList (list) {
         }
     }
 
-    OutputBox.innerHTML = output;
+    El.OutputBox.innerHTML = output;
 }
 
 function CheckWords() {
-    let words = WordsInputEl.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
+    let words = El.WordsInput.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
     if (Validate(words)) {
         let output = '';
         let Msg = [];
-        OutputBox.innerHTML = '';
+        El.OutputBox.innerHTML = '';
 
         /* Check which list the word is in */
         for (let i = 0; i < words.length; i++) {
@@ -324,27 +321,27 @@ function CheckWords() {
                 output += Msg[i];
             }  
         }
-        OutputBox.innerHTML = output;
+        El.OutputBox.innerHTML = output;
     }
 }
 
 function Statistics() {
-    let words = WordsInputEl.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
+    let words = El.WordsInput.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
     if (!Validate(words)) return; 
     let wordGroups = test(words);
-    OutputBox.innerHTML = '';
+    El.OutputBox.innerHTML = '';
     for (let i = 0; (i < wordGroups.length) && (i < 25); i++) {
         let WordGroup = wordGroups[i];
         WordGroup.GroupSizes.sort((a,b) => b - a);
-        OutputBox.innerText += WordGroup.Guess + ' ';
-        OutputBox.innerHTML += WordGroup.GroupSizes.length;
+        El.OutputBox.innerText += WordGroup.Guess + ' ';
+        El.OutputBox.innerHTML += WordGroup.GroupSizes.length;
         if(SearchStringInArray(WordGroup.Guess, SolutionList) > 0) {
-            OutputBox.innerHTML += '-> ';
+            El.OutputBox.innerHTML += '-> ';
         } else {
-            OutputBox.innerHTML += '-- ';
+            El.OutputBox.innerHTML += '-- ';
         }
-        OutputBox.innerHTML += WordGroup.GroupSizes.join('-');
-        OutputBox.innerHTML += '<br>';
+        El.OutputBox.innerHTML += WordGroup.GroupSizes.join('-');
+        El.OutputBox.innerHTML += '<br>';
     }
 }
 
@@ -409,7 +406,7 @@ function Validate(words) {
     for (let i=0; i < words.length; i++) {
         if (!(/^[A-Z]{5}$/.test(words[i]))) {
             let errorMsg = words[i] + ' must be alpha only & exactly 5 letters long';
-            OutputBox.innerHTML = errorMsg;
+            El.OutputBox.innerHTML = errorMsg;
             return false;
         }
     }
@@ -418,4 +415,3 @@ function Validate(words) {
 
 }
 )
-
