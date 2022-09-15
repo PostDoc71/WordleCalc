@@ -3,10 +3,8 @@
 // First attempt at a complete Wordle solver
 
 Promise.all([
-    // fetch('https://babelthuap.github.io/kokowordle/solutions.json').then(r => r.json()),
-    // fetch('https://babelthuap.github.io/kokowordle/guesses.json').then(r => r.json()),
-    fetch('https://postdoc71.github.io/WordleCalc/SolutionList.json').then(r => r.json()),
-    fetch('https://postdoc71.github.io/WordleCalc/GuessList.json').then(r => r.json()),
+    fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),
+    fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
 ]).then (([s, g]) => {
     let SolutionList = [...s];
     let GuessList = [...g];
@@ -56,10 +54,10 @@ let GreenBoxes = ['', '', '', '', ''];
 let YellowBoxes = ['', '', '', '', ''];
 let YellowLetters = '';
 let GrayLetters = '';
-let Row = -1;   // initialize
-let LastDataRow = -1;
-let SolutionsLeft = [];
-let GuessesLeft = [];
+let Row = -1;           // current row
+let LastDataRow = -1;   // summary data collected through this row
+let Solutions = ['', '', '', '', '', ''];
+let Guesses = ['', '', '', '', '', ''];
 
 //======================================
 // MAIN PROGRAM
@@ -97,15 +95,8 @@ function DisplayGuess() {
     for (let i = 0; i < 5; i++) {                       // transfer letters
         Cell[Row][i].element.innerHTML = word[i];
         Cell[Row][i].letter = word[i];
-    }
-    for (let i = 0; i < 5; i++) {                       // initialize color
-        if ((Row > 0) && (Cell[Row-1][i].color === GREEN)) {
-            Cell[Row][i].element.style.backgroundColor='mediumseagreen';
-            Cell[Row][i].color = GREEN;
-        } else {
-            Cell[Row][i].element.style.backgroundColor='gray';
-            Cell[Row][i].color = GRAY;
-        }
+        Cell[Row][i].element.style.backgroundColor='gray';
+        Cell[Row][i].color = GRAY;
     }
     GuessEl.value = '';
 }
@@ -131,101 +122,116 @@ function ValidateGuess(Word) {
     let errorMsg = Word;
     if (!(/^[A-Z]{5}$/.test(Word))) {
         errorMsg += ' must be alpha only & exactly 5 letters long';
-    } else if ((SearchStringInArray(Word, SolutionList) < 0) && (SearchStringInArray(Word, GuessList) < 0) ) {
+    } else if ((BinarySearchStringInArray(Word, SolutionList) < 0) && (BinarySearchStringInArray(Word, GuessList) < 0) ) {
         errorMsg += ' is not in the dictionary';
     } else return true;
     alert(errorMsg);
     return false;
 }
 
+// Find all words in the dictionaries that match the guess word pattern
 function FindWords() {
-    let output = '';
     CollectData();
-    SolutionsLeft = CullList(SolutionList);    // WHY DOES THIS RETURN A STRING INSTEAD OF AN ARRAY?
-    for (let i = 0; i < SolutionsLeft.length; i = i + 5) {
-        output += SolutionsLeft.slice(i, i + 5) + ' ';
+    if (Row === 0) {
+        Solutions[0] = CullList(SolutionList);
+        Guesses[0] = CullList(GuessList);
+    } else {
+        Solutions[Row] = CullList(Solutions[Row - 1]);
+        Guesses[Row] = CullList(Guesses[Row - 1]);
     }
-    output += '<===> ';
-    GuessesLeft = CullList(GuessList);
-    for (let i = 0; i < GuessList.length; i = i + 5) {
-        output += GuessesLeft.slice(i, i + 5) + ' ';
-    }
-    WordsInputEl.value = output;
+    ClearAnswers();
+    WordsInputEl.value = Solutions[Row].join(' ') + ' <===> ' + Guesses[Row].join(' ');
 }
 
 function CollectData() {
     if (Row === -1) return;
     LastDataRow++;
-    for (let i = LastDataRow; i <= Row; i++) {
-        
-        // Green letters
-        for (let j = 0; j < 5; j++) {
-            if (Cell[i][j].color === GREEN) {
-                GreenBoxes[j] =Cell[i][j].letter;
+    for (let i = LastDataRow; i <= Row; i++) {  //Process each row
+
+        for (let j = 0; j < 5; j++) {           // Process green and yellow letters in the row
+            let cellIJletter = Cell[i][j].letter;
+            switch(Cell[i][j].color) {
+
+                case GREEN:
+                    GreenBoxes[j] = cellIJletter;
+                    break;
+
+                case YELLOW:
+                    YellowLetters = AddUniqLetterToString(cellIJletter, YellowLetters);
+                    YellowBoxes[j] = AddUniqLetterToString(cellIJletter, YellowBoxes[j]);
+                    break;
             }
         }
+        // Process gray letters AFTER yellow and green.
+        // LOGIC Matching green: at least this cell is yellow.
+        //       Matching yellow: mark this cell yellow (if there is only one other gray cell,
+        //         that cell is green with this letter--not implemented).
+        //       No matching yellow or green: truly a gray.
 
-        // Yellow letters and boxes
-        for (let j = 0; j < 5; j++) {
-            if (Cell[i][j].color === YELLOW) {
-                if (YellowLetters.search(Cell[i][j].letter) < 0) {
-                    YellowLetters += Cell[i][j].letter;
-                }
-                if (YellowBoxes[j].search(Cell[i][j].letter) < 0) {
-                    YellowBoxes[j] += Cell[i][j].letter;
-                }
-            }
-        }
-
-        // Gray letters
         for (let j = 0; j < 5; j++) {
             if (Cell[i][j].color === GRAY) {
-                if (GrayLetters.search(Cell[i][j].letter) < 0) {
-                    GrayLetters += Cell[i][j].letter;
+                if (SearchStringInArray(Cell[i][j].letter, GreenBoxes)  >= 0 ||
+                        YellowLetters.includes(Cell[i][j].letter)) {
+                    YellowLetters = AddUniqLetterToString(Cell[i][j].letter, YellowLetters);
+                    YellowBoxes[j] = AddUniqLetterToString(Cell[i][j].letter, YellowBoxes[j]);
+                    Cell[i][j].color = YELLOW;
+                }
+                if (Cell[i][j].color === GRAY) {
+                    GrayLetters = AddUniqLetterToString(Cell[i][j].letter, GrayLetters);
                 }
             }
         }
     }
-    LastDataRow = Row;
+// DEBUG
+console.log('Green: ' + GreenBoxes);
+console.log('Yellow: ' + YellowBoxes);
+console.log('Gray: ' + GrayLetters);
 }
 
-function CullList(list) {
+function AddUniqLetterToString(letter, string) {
+    if (!string.includes(letter)) {
+        string += letter;
+    }
+    return string;
+}
+
+function CullList(list) { 
     let newList = [];
-    iLoop:
-    for (let i = 0; i < list.length; i++) {
+    list.forEach((word, i) => {
 
     // Exclude words with gray letters
         for (let j = 0; j < GrayLetters.length; j++) {
-            if (list[i].search(GrayLetters[j]) >= 0) {
-                continue iLoop;
+            if (word.includes(GrayLetters[j])) {
+                return;
             }
         }
 
     // Exclude if green letters not in proper place
        for (let j = 0; j < 5; j++) {
-            if ((GreenBoxes[j] != '') && (list[i][j] != GreenBoxes[j])) {
-                continue iLoop;
+            if ((GreenBoxes[j] != '') && (word[j] != GreenBoxes[j])) {
+                return;
             }
         }
 
     // If yellow letter present, check for presence and position
         for (let j = 0; j < YellowLetters.length; j++) {
-            if (list[i].search(YellowLetters[j]) < 0) {
-                continue iLoop;                             // missing a yellow letter
+            if (!word.includes(YellowLetters[j])) {
+                return;                            // missing a yellow letter
             }
         }
         for (let j = 0; j < 5; j++) {
             for (let k = 0; k < YellowBoxes[j].length; k++) {
-                if (YellowBoxes[j][k] === list[i][j]) {
-                    continue iLoop;                         // matches a yellow letter position
+                if (YellowBoxes[j][k] === word[j]) {
+                    return;
                 }
             }
         }
-    newList += list[i];
-    }
+    newList.push(word);
+    });
     return newList;
 }
 
+// Erase the last entry in the table
 function EraseLine() {
 for (let i = 0; i < 5; i++) {
     Cell[Row][i].letter = '';
@@ -235,7 +241,7 @@ for (let i = 0; i < 5; i++) {
     GreenBoxes[i] = '';
     YellowBoxes[i] = '';
 }
-YellowLetters = ''
+YellowLetters = '';         // Reset to initial state
 GuessBox[Row] = '';
 GrayLetters = '';
 ClearAnswers();
@@ -255,8 +261,8 @@ function ClearGuesses() {
         alert("'The word list must contain the separator '<===>' between the solution words and guess words.");
         return;
     }
+    ClearAnswers();
     WordsInputEl.value = words.slice(0, index);
-    OutputBox.innerHTML = '';
 }
 
 
@@ -264,6 +270,24 @@ function ClearGuesses() {
 function SearchStringInArray(str, strArray) {
     for (let j=0; j<strArray.length; j++) {
         if (strArray[j].match(str)) return j;
+    }
+    return -1;
+}
+
+// Returns index of str in strArray or -1 if not found
+function BinarySearchStringInArray(str, strArr) {
+    let left = 0;
+    let right = strArr.length - 1;
+    let mid;
+    while (left <= right) {
+        mid = Math.floor((left + right) / 2);
+        if (str === strArr[mid]) {
+            return mid;
+        } else if (str > strArr[mid]) {
+            left = ++mid;
+        } else {
+            right = --mid;
+        }
     }
     return -1;
 }
@@ -291,43 +315,45 @@ function ShowList (list) {
 
 function CheckWords() {
     let words = WordsInputEl.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
-    if (Validate(words)) {
-        let output = '';
-        let Msg = [];
-        OutputBox.innerHTML = '';
+    if (!Validate(words)) {
+        return;
+    }
+    OutputBox.innerHTML = '';
 
-        /* Check which list the word is in */
-        for (let i = 0; i < words.length; i++) {
-            Msg[i] = words[i] + ' - '; 
-            if (SearchStringInArray(words[i], SolutionList) >= 0) {
-                Msg[i] += `bonafide solution<br>`;
-            } else if (SearchStringInArray(words[i], GuessList) >= 0) {
-                Msg[i] += `valid guess word<br>`;
-            } else {
-                Msg[i] += `not in the dictionary<br>`;
-            }
+    /* Check which list the word is in */
+    let Msg = [];
+    for (let i = 0; i < words.length; i++) {
+        Msg[i] = words[i] + ' - '; 
+        if (BinarySearchStringInArray(words[i], SolutionList) >= 0) {
+            Msg[i] += `bonafide solution<br>`;
+        } else if (BinarySearchStringInArray(words[i], GuessList) >= 0) {
+            Msg[i] += `valid guess word<br>`;
+        } else {
+            Msg[i] += `not in the dictionary<br>`;
         }
+    }
 
-        /* Sort and display the list */
-        for (let i = 0; i < words.length; i++) {
-            if (Msg[i].match(/\bbonafide\b/)) {
-                output +=  Msg[i];
-            }
-        }        
-        for (let i = 0; i < words.length; i++) {
-            if (Msg[i].match(/\bvalid\b/)) {
-                output += Msg[i];
-            }           
-        }        
-        for (let i = 0; i < words.length; i++) {
-            if (Msg[i].match(/\bnot\b/)) {
-                output += Msg[i];
-            }  
+    /* Sort and display the list */
+    let output1 = '';
+    let output2 = '';
+    let output3 = '';
+    for (let i = 0; i < words.length; i++) {
+        switch(Msg[i][8]) {
+            case 'b':
+                output1 += (Msg[i]);  
+                break; 
+            case 'v':
+                output2 += (Msg[i]);  
+                break; 
+            case 'n':
+                output3 += (Msg[i]);  
+                break; 
         }
-        OutputBox.innerHTML = output;
+    OutputBox.innerHTML = output1 + output2 + output3;
     }
 }
 
+// Display each group with stats
 function Statistics() {
     let words = WordsInputEl.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
     if (!Validate(words)) return; 
@@ -348,17 +374,15 @@ function Statistics() {
     }
 }
 
-// Display each group with stats
 function test(possibleAnswers) {
     let wordGroups = [];
     for (let i = 0; i < possibleAnswers.length; i++) {  // Collect the patterns
         let guessWord = possibleAnswers[i];
         let patterns = [];
-        jLoop:
         for (let j = 0; j < possibleAnswers.length; j++) {
             let matchWord = possibleAnswers[j];
-            if (SearchStringInArray(matchWord, GuessList) >= 0) {
-                continue jLoop;
+            if (BinarySearchStringInArray(matchWord, GuessList) >= 0) {
+                continue;
             }
             let pattern = MatchPattern(guessWord, matchWord);
             patterns.push(pattern);
@@ -418,4 +442,3 @@ function Validate(words) {
 
 }
 )
-
