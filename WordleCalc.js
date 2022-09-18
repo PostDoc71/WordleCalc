@@ -58,7 +58,7 @@ let YellowLetters = '';
 let GrayLetters = '';
 let Row = -1;           // current row
 let LastDataRow = -1;   // summary data collected through this row
-let DataCollected = [false, false, false, false, false, false]
+let DataCollected = [false, false, false, false, false, false];     // not currently in use
 let Solutions = ['', '', '', '', '', ''];
 let Guesses = ['', '', '', '', '', ''];
 
