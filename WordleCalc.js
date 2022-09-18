@@ -3,14 +3,14 @@
 // First attempt at a complete Wordle solver
 
 Promise.all([
-    fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),
-    fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
-]).then (([SolutionList, GuessList]) => {
-
-//     fetch('SolutionList.json').then(r => r.json()),
-//     fetch('GuessList.json').then(r => r.json()),
+//     fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),
+//     fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
 // ]).then (([SolutionList, GuessList]) => {
 
+    fetch('SolutionList.json').then(r => r.json()),
+    fetch('GuessList.json').then(r => r.json()),
+]).then (([SolutionList, GuessList]) => {
+alert(SolutionList[2]);
 //======================================
 // GLOBAL VARIABLES
 //======================================
