@@ -3,13 +3,14 @@
 // First attempt at a complete Wordle solver
 
 Promise.all([
-    fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),
-    fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
-]).then (([SolutionList, GuessList]) => {
 
-//     fetch('SolutionList.json').then(r => r.json()),
-//     fetch('GuessList.json').then(r => r.json()),
+//     fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),  // Development version
+//     fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
 // ]).then (([SolutionList, GuessList]) => {
+
+    fetch('SolutionList.json').then(r => r.json()),  // Production version
+    fetch('GuessList.json').then(r => r.json()),
+]).then (([SolutionList, GuessList]) => {
 
 //======================================
 // GLOBAL VARIABLES
@@ -17,9 +18,9 @@ Promise.all([
 
 const El = {
     Guess: document.getElementById('guessbox'),
+    CalcGuess: document.getElementById('guess-to-table'),
     GuessTable: document.getElementById('guess-table'),
-    CalcGuess: document.getElementById('guesscalc1'),
-    FindWords: document.getElementById('wordmatch'),
+    FindWords: document.getElementById('find-matches'),
     Erase: document.getElementById('eraseline'),
     WordsInput: document.getElementById('words-input'),
     Calculate: document.getElementById('statistics'),
@@ -57,19 +58,19 @@ let YellowLetters = '';
 let GrayLetters = '';
 let Row = -1;           // current row
 let LastDataRow = -1;   // summary data collected through this row
+let DataCollected = [false, false, false, false, false, false]
 let Solutions = ['', '', '', '', '', ''];
 let Guesses = ['', '', '', '', '', ''];
 
 //======================================
 // MAIN PROGRAM
 //======================================
-
 El.Guess.addEventListener('keypress', e => {
     if (e.key === 'Enter') {
-        DisplayGuess();
+        DisplayGuess(El.Guess.value);
     }
 });
-El.CalcGuess.addEventListener('click', DisplayGuess);
+El.CalcGuess.addEventListener('click', () => DisplayGuess(El.Guess.value));
 for (let i = 0; i < 6; i++) {
     for (let j = 0; j < 5; j++) {
         Cell[i][j].element.addEventListener('click', () => ChangeColor(i, j));
@@ -81,19 +82,20 @@ El.Calculate.addEventListener('click', Statistics);
 El.CheckWord.addEventListener('click', CheckWords);
 El.Clear.addEventListener('click', ClearAnswers);
 El.ClearGuess.addEventListener('click', ClearGuesses);
-El.ClearGuess.addEventListener('click', () => ShowList(SolutionList));
+El.SolutionList.addEventListener('click', () => ShowList(SolutionList));
 El.GuessList.addEventListener('click', () => ShowList(GuessList));
 
 //======================================
 // FUNCTIONS
 //======================================
 
-function DisplayGuess() {
-    let word = String(El.Guess.value.toUpperCase().split(/[^A-Za-z]+/).filter(x => x));
+function DisplayGuess(guessword) {
+    let word = "";
+    word += guessword.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
     if (!ValidateGuess(word) || Row > 6) return;
     Row++;
     GuessBox[Row] = word;
-    for (let i = 0; i < 5; i++) {                       // transfer letters
+    for (let i = 0; i < 5; i++) {
         Cell[Row][i].element.innerHTML = word[i];
         Cell[Row][i].letter = word[i];
         Cell[Row][i].element.style.backgroundColor='gray';
@@ -104,6 +106,32 @@ function DisplayGuess() {
 
 function ChangeColor(row, col) {
     if (row != Row) return;
+    if (DataCollected[row]) {
+        alert('To change colors, press CLEAR LAST LINE and retype the word.');
+        return;
+    }
+    // if (DataCollected[row]) {       // if data already collected, erase and start the line over
+    //     let word = Guesses[row];
+    //     let colors = ['', '', '', '', ''];
+    //     for (let i = 0; i < 5; i++) colors[i] = Cell[Row][i].color;
+    //     EraseLine();
+    //     DataCollected[row] = false;    
+    //     DisplayGuess(word);
+    //     for (let i = 0; i < 5; i++) {
+    //         Cell[row][i].color = colors[i];
+    //         switch(colors[i]) {
+    //             case Color.Gray:
+    //                 Cell[row][i].element.style.backgroundColor='gray';
+    //                 break;
+    //             case Color.Green:
+    //                 Cell[row][i].element.style.backgroundColor='mediumseagreen';
+    //                 break;
+    //             case Color.Yellow:
+    //                 Cell[row][i].element.style.backgroundColor='rgb(255, 225, 0)';
+    //                 break;
+    //         }
+    //     }
+    // }
     Cell[row][col].color = ++Cell[row][col].color % 3;
     switch (Cell[row][col].color) {
         case Color.Gray:
@@ -119,11 +147,11 @@ function ChangeColor(row, col) {
     return;
 }
 
-function ValidateGuess(Word) {
-    let errorMsg = Word;
-    if (!(/^[A-Z]{5}$/.test(Word))) {
+function ValidateGuess(word) {
+    let errorMsg = word;
+    if (!(/^[A-Z]{5}$/.test(word))) {
         errorMsg += ' must be alpha only & exactly 5 letters long';
-    } else if ((BinarySearchStringInArray(Word, SolutionList) < 0) && (BinarySearchStringInArray(Word, GuessList) < 0) ) {
+    } else if ((SearchStringInArray(word, SolutionList) < 0) && (SearchStringInArray(word, GuessList) < 0) ) {
         errorMsg += ' is not in the dictionary';
     } else return true;
     alert(errorMsg);
@@ -147,6 +175,7 @@ function FindWords() {
 function CollectData() {
     if (Row === -1) return;
     LastDataRow++;
+    DataCollected[Row] = true;
     for (let i = LastDataRow; i <= Row; i++) {  //Process each row
 
         for (let j = 0; j < 5; j++) {           // Process green and yellow letters in the row
@@ -183,10 +212,6 @@ function CollectData() {
             }
         }
     }
-// DEBUG
-console.log('Green: ' + GreenBoxes);
-console.log('Yellow: ' + YellowBoxes);
-console.log('Gray: ' + GrayLetters);
 }
 
 function AddUniqLetterToString(letter, string) {
@@ -237,6 +262,7 @@ function EraseLine() {
     GuessBox[Row] = '';                        // Reset last row
     Solutions[Row] = '';
     Guesses[Row] = '';
+    DataCollected[Row] = false;
     for (let i = 0; i < 5; i++) {
         Cell[Row][i].letter = '';
         Cell[Row][i].color = Color.Gray;
@@ -272,7 +298,7 @@ function ClearGuesses() {
 
 // Returns index of str in strArray or -1 if not found
 function SearchStringInArray(str, strArray) {
-    for (let j=0; j<strArray.length; j++) {
+    for (let j=0; j < strArray.length; j++) {
         if (strArray[j].match(str)) return j;
     }
     return -1;

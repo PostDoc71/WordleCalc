@@ -6,7 +6,7 @@
  
  }
  
- #guesscalc1 {
+ #guess-to-table {
    margin-left: 5px;
 }
 
@@ -30,7 +30,7 @@ table {
    color: white;
 }
 
-#wordmatch {
+#find-matches {
    margin-bottom: 6px;
 }
 #eraseline {
@@ -45,7 +45,7 @@ table {
 }
 
 #words-input {
-   border: 2px solid blue;.
+   border: 2px solid blue;
 }
 #statistics {
    margin-top: 6px;
@@ -55,4 +55,17 @@ table {
    margin-bottom: 6px;
 }
 
-  
+/* //======================================
+// DEBUGGERY
+//======================================
+let ElDebug = document.getElementById('debug');
+ElDebug.addEventListener('click', debug);
+function debug() {
+    console.log('Greenboxes: ' + GreenBoxes);
+    console.log('Yellowboxes: ' + YellowBoxes);
+    console.log('Grayboxes: ' + GrayLetters);
+    let norn = 'Solutions: ';
+    Solutions.forEach(item => norn += item.length + ', ');
+    console.log(norn);
+    console.log('Data collected: ' + DataCollected);
+} */
