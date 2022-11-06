@@ -4,12 +4,12 @@
 
 Promise.all([
 
-//     fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),  // Development version
-//     fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
-// ]).then (([SolutionList, GuessList]) => {
+    fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),  // Development version
+    fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
 
-    fetch('SolutionList.json').then(r => r.json()),  // Production version
-    fetch('GuessList.json').then(r => r.json()),
+    // fetch('SolutionList.json').then(r => r.json()),  // Production version
+    // fetch('GuessList.json').then(r => r.json()),
+    
 ]).then (([SolutionList, GuessList]) => {
 
 //======================================
@@ -90,6 +90,7 @@ El.GuessList.addEventListener('click', () => ShowList(GuessList));
 //======================================
 
 function DisplayGuess(guessword) {
+    if (Row > LastDataRow) FindWords();
     let word = "";
     word += guessword.toUpperCase().split(/[^A-Za-z]+/).filter(x => x);
     if (!ValidateGuess(word) || Row > 6) return;
@@ -181,11 +182,9 @@ function CollectData() {
         for (let j = 0; j < 5; j++) {           // Process green and yellow letters in the row
             let cellIJletter = Cell[i][j].letter;
             switch(Cell[i][j].color) {
-
                 case Color.Green:
                     GreenBoxes[j] = cellIJletter;
                     break;
-
                 case Color.Yellow:
                     YellowLetters = AddUniqLetterToString(cellIJletter, YellowLetters);
                     YellowBoxes[j] = AddUniqLetterToString(cellIJletter, YellowBoxes[j]);
@@ -242,13 +241,13 @@ function CullList(list) {
     // If yellow letter present, check for presence and position
         for (let j = 0; j < YellowLetters.length; j++) {
             if (!word.includes(YellowLetters[j])) {
-                return;                            // missing a yellow letter
+                return;                    // missing a yellow letter
             }
         }
         for (let j = 0; j < 5; j++) {
             for (let k = 0; k < YellowBoxes[j].length; k++) {
                 if (YellowBoxes[j][k] === word[j]) {
-                    return;
+                    return;                // don't repeat a yellow letter
                 }
             }
         }
@@ -389,7 +388,7 @@ function Statistics() {
     if (!Validate(words)) return; 
     let wordGroups = test(words);
     El.OutputBox.innerHTML = '';
-    for (let i = 0; (i < wordGroups.length) && (i < 25); i++) {
+    for (let i = 0; (i < wordGroups.length) && (i < 75); i++) {
         let WordGroup = wordGroups[i];
         WordGroup.GroupSizes.sort((a,b) => b - a);
         El.OutputBox.innerText += WordGroup.Guess + ' ';
@@ -469,6 +468,5 @@ function Validate(words) {
     }
     return true;
 }
-
 }
 )
