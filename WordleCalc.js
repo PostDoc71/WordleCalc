@@ -142,7 +142,7 @@ function ChangeColor(row, col) {
             Cell[row][col].element.style.backgroundColor='mediumseagreen';
             break;
         case Color.Yellow:
-            Cell[row][col].element.style.backgroundColor='rgb(255, 225, 0)';
+            Cell[row][col].element.style.backgroundColor='rgb(230, 205, 0)';
             break;
     }
     return;
