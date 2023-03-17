@@ -84,6 +84,10 @@ El.Clear.addEventListener('click', ClearAnswers);
 El.ClearGuess.addEventListener('click', ClearGuesses);
 El.SolutionList.addEventListener('click', () => ShowList(SolutionList));
 El.GuessList.addEventListener('click', () => ShowList(GuessList));
+El.WordsInput.oninput = function() {
+    El.WordsInput.value = El.WordsInput.value.toUpperCase();
+    return;
+};
 
 //======================================
 // FUNCTIONS
