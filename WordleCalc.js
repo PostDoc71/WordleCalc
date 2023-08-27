@@ -4,11 +4,11 @@
 
 Promise.all([
 
-    fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),  // Development version
-    fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
+    // fetch('https://postdoc71.github.io/Wordle/SolutionList.json').then(r => r.json()),  // Development version
+    // fetch('https://postdoc71.github.io/Wordle/GuessList.json').then(r => r.json()),
 
-    // fetch('SolutionList.json').then(r => r.json()),  // Production version
-    // fetch('GuessList.json').then(r => r.json()),
+    fetch('SolutionList.json').then(r => r.json()),  // Production version
+    fetch('GuessList.json').then(r => r.json()),
     
 ]).then (([SolutionList, GuessList]) => {
 
@@ -56,8 +56,8 @@ let GreenBoxes = ['', '', '', '', ''];
 let YellowBoxes = ['', '', '', '', ''];
 let YellowLetters = '';
 let GrayLetters = '';
-let Row = -1;           // current row
-let LastDataRow = -1;   // summary data collected through this row
+let Row = -1;                       // current row
+let LastDataRow = -1;               // summary data collected through this row
 let DataCollected = [false, false, false, false, false, false];     // not currently in use
 let Solutions = ['', '', '', '', '', ''];
 let Guesses = ['', '', '', '', '', ''];
@@ -71,7 +71,7 @@ El.Guess.addEventListener('keypress', e => {
     }
 });
 El.CalcGuess.addEventListener('click', () => DisplayGuess(El.Guess.value));
-for (let i = 0; i < 6; i++) {
+for (let i = 0; i < 6; i++) {       // change grid element colors
     for (let j = 0; j < 5; j++) {
         Cell[i][j].element.addEventListener('click', () => ChangeColor(i, j));
     }
