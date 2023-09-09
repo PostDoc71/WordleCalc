@@ -13,7 +13,7 @@ async function main() {
     let resp = await fetch(url);
     let text = await resp.text();
 
-    let words = JSON.parse(text.match(/ga=(\[.+?\])/)[1]);
+    let words = JSON.parse(text.match(/\[[^\]]*?aahed.*?\]/));
     if (!words) return;
 
     let solnStart;
@@ -24,7 +24,7 @@ async function main() {
         }
     }
 
-    let guesses = [...new Set(words)].map(x => x.toUpperCase()).sort();
+    let guesses = [...new Set(words.slice(0, solnStart))].map(x => x.toUpperCase()).sort();
     if (guesses) {
         writeFileSync('GuessList.json', JSON.stringify(guesses));
     }
@@ -38,5 +38,5 @@ async function main() {
 async function getAssetUrl() {
     let resp = await fetch('https://www.nytimes.com/games/wordle/index.html');
     let text = await resp.text();
-    return text.match('(https://www.nytimes.com/games-assets/v2/wordle.*?js)"')[1];
+    return text.match('(https://www.nytimes.com/games-assets/v2/wordle[^"]*?js)')[1];
 }
