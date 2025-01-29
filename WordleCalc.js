@@ -189,6 +189,15 @@ function CollectData() {
                 case Color.Green:
                     GreenBoxes[j] = cellIJletter;
                     break;
+
+// if cellIJletter is currently yellow, remove it from YellowBoxes and
+//      check if 
+//          letter is gray in another postiton -> remove from YellowLetters
+//          letter has another yellow position -> no action
+//          letter has no other position -> remove from YellowLetters
+// 
+
+
                 case Color.Yellow:
                     YellowLetters = AddUniqLetterToString(cellIJletter, YellowLetters);
                     YellowBoxes[j] = AddUniqLetterToString(cellIJletter, YellowBoxes[j]);
@@ -428,6 +437,9 @@ function test(possibleAnswers) {
             }
             groups[pattern]++;
         }
+            // CALCULATE AVERAGE OF GROUP SIZES  DEBUG
+
+
         wordGroups.push({ Guess: guessWord, GroupSizes: Object.values(groups) });
     }
     wordGroups.sort ((a,b) => b.GroupSizes.length - a.GroupSizes.length);
